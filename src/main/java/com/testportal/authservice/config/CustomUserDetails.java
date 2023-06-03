@@ -1,6 +1,8 @@
 package com.testportal.authservice.config;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,8 +28,9 @@ public class CustomUserDetails implements UserDetails {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-
-		return null;
+		Set<Authority> grantedAuthority = new HashSet<>();
+		this.user.getRole().getRoles().forEach(userRole -> grantedAuthority.add(Authority.builder().authority(userRole).build()));
+		return grantedAuthority;
 	}
 
 	@Override

@@ -18,7 +18,10 @@ import com.testportal.authservice.dto.CredentialsDto;
 import com.testportal.authservice.dto.UserDto;
 import com.testportal.authservice.helper.AuthHelper;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class AuthenticationService {
 
 	private Logger log = LoggerFactory.getLogger(AuthenticationService.class);
@@ -48,14 +51,15 @@ public class AuthenticationService {
 	}
 
 	public Boolean validateToken(HttpServletRequest request, CredentialsDto userCred, boolean isExternal) {
-		String token = request.getHeader(AppConstants.Authorization.name());
-		if (token == null || !token.startsWith(AppConstants.Bearer.name())) {
+		String token = request.getHeader(AppConstants.AUTHORIZATION.value);
+		log.info("requested resource is: {}", request.getRequestURI());
+		if (token == null || !token.startsWith(AppConstants.BEARER.value)) {
 			log.error("Invalid token: {}", token);
 			throw new AccessDeniedException("Invalid token passed!");
 		}
 		if (isExternal) {
 			return authHelper.validateExternalUserAndToken(userCred, token);
 		}
-		return authHelper.validateToken(token.substring(7));
+		return authHelper.validateToken(token.substring(7), request.getHeader(AppConstants.EXCH_REQ_METHOD.value), request.getHeader(AppConstants.EXCH_REQ_URI.value));
 	}
 }

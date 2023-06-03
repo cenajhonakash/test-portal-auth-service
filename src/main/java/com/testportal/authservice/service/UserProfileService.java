@@ -10,12 +10,16 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.testportal.authservice.dto.CredentialsDto;
 import com.testportal.authservice.dto.UserDto;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class UserProfileService {
 
 	private Logger log = LoggerFactory.getLogger(UserProfileService.class);
@@ -47,6 +51,12 @@ public class UserProfileService {
 			credentials.setPassword(passEncoder.encode(credentials.getPassword()));
 			HttpEntity<CredentialsDto> request = new HttpEntity<CredentialsDto>(credentials, headers);
 			response = rest.exchange(url, HttpMethod.POST, request, UserDto.class);
+		}
+		try {
+			response = rest.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), UserDto.class);
+		} catch (RestClientException e) {
+			log.error("Error connecting rest client ups with error: {}", e.getMessage());
+			// throw new RestServiceCallFailedException("Error connecting rest client ups");
 		}
 		response = rest.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), UserDto.class);
 
